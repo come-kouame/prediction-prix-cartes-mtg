@@ -22,9 +22,8 @@ for id in file["data"]:
     if count > 10:
         break
     count += 1
-    print(file["data"][id]["cards"])
     result["data"][id] = {}
-    if ("cards" in file["data"][id]):
+    if ("cards" in file["data"][id]): # On extrait les 10 premieres extensions pour l'instant
         result["data"][id]["cards"] = file["data"][id]["cards"]
 
 
@@ -33,3 +32,4 @@ with open('AllPrintTest.json', 'w') as f:d
 
 
 # ATTENTION : CERTAINS ATTRIBUTS SONT OBSOLETES (ex:hasFoil,hasNotFoil) SUR MTJSON "O"
+# Pour savoir si la carte a une version foil utiliser "finishes". 

@@ -28,8 +28,8 @@ for id in file["data"]:
         result["data"][id]["cards"] = file["data"][id]["cards"]
 
 
-with open('AllPrintTest.json', 'w') as f:
+with open('AllPrintTest.json', 'w') as f:d
     json.dump(result, f, indent=4)
 
 
-# print(result["data"][id].values())
+# ATTENTION : CERTAINS ATTRIBUTS SONT OBSOLETES (ex:hasFoil,hasNotFoil) SUR MTJSON "O"

@@ -27,7 +27,7 @@ for id in file["data"]:
         result["data"][id]["cards"] = file["data"][id]["cards"]
 
 
-with open('AllPrintTest.json', 'w') as f:d
+with open('AllPrintTest.json', 'w') as f:
     json.dump(result, f, indent=4)
 
 

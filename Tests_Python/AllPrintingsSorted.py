@@ -33,6 +33,8 @@ for id in file["data"]:
 
                 resultsorted["data"][id]["cards"][card_count]["extension"] = id 
 
+                resultsorted["data"][id]["cards"][card_count]["releaseDate"] = file["data"][id]["releaseDate"]
+
                 resultsorted["data"][id]["cards"][card_count]["rarity"] = file["data"][id]["cards"][card_count]["rarity"]
                 
                 resultsorted["data"][id]["cards"][card_count]["manaValue"] = file["data"][id]["cards"][card_count]["manaValue"]
@@ -54,9 +56,11 @@ for id in file["data"]:
                 
                 if (file["data"][id]["cards"][card_count]["subtypes"] ):
                     resultsorted["data"][id]["cards"][card_count]["subtypes"] = file["data"][id]["cards"][card_count]["subtypes"]
+                    
+                if (file["data"][id]["cards"][card_count]["legalities"] ):
+                    resultsorted["data"][id]["cards"][card_count]["legalities"] = file["data"][id]["cards"][card_count]["legalities"]
 
 
 with open('AllPrintingsSorted.json', 'w') as f:
     json.dump(resultsorted, f, indent=4)
-
 

@@ -7,10 +7,10 @@ card_input=input('Saisir carte : ')
 found_ids=[]
 
 
-for set_id in file["data"]:                                     # Vérification si le set contient des cartes
-    if "cards" in file["data"][set_id]:                         # Parcours de chaque carte dans le set
-        for card in file["data"][set_id]["cards"]:              # Accéder à la carte courante
-            if card["name"] == card_input:
+for set_id in file["data"]:                                     
+    if "cards" in file["data"][set_id]:                         # Vérification si le set contient des cartes
+        for card in file["data"][set_id]["cards"]:              # Parcours de chaque carte dans le set
+            if card["name"] == card_input:                      # Accéder à la carte courante
                 found_ids.append(card["uuid"])
 
 if found_ids:

@@ -10,11 +10,12 @@ with open("AllPrintingsSorted.json", 'r',errors="ignore") as f:
         file = json.load(f);
 
 
-def filter_by_key(key,value):
-        result= {}
-        result["meta"] = file["meta"]
-        result["data"] = {}
+result= {}
+result["meta"] = file["meta"]
+result["data"] = {}
 
+def filter_by_key(key, value):
+        print(1)
         for id in file["data"]:
                 result["data"][id] = {}
                 result["data"][id]["cards"] = {}
@@ -22,5 +23,4 @@ def filter_by_key(key,value):
                 for card_count in range(totalSetCards) :       
                         if (key in file["data"][id]["cards"][card_count] 
                         and value in file["data"][id]["cards"][card_count][key] ):      
-                                result["data"][id]["cards"][card_count] = {}  
-
+                                result["data"][id]["cards"][card_count] = {}              

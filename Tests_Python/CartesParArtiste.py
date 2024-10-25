@@ -13,9 +13,7 @@ for set_id in file["data"]:
     if "cards" in file["data"][set_id]:
         # Parcours de chaque carte dans le set
         for card in file["data"][set_id]["cards"]:
-            # Vérification si l'artiste de la carte correspond à l'entrée utilisateur
             if "artist" in card and card["artist"] == artist_input:
-                # Ajout de l'UUID de la carte trouvée à la liste
                 found_ids.append(card["uuid"])
 
 if found_ids:

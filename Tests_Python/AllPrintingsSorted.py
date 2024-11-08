@@ -19,46 +19,43 @@ resultsorted["meta"] = file["meta"]
 resultsorted["data"] = {}
 
 for id in file["data"]:
-    resultsorted["data"][id] = {}
-    resultsorted["data"][id]["cards"] = {}
-    totalSetCards = file["data"][id]["totalSetSize"]     # Nombre de cartes dans 1 Set
+    totalSetCards = file["data"][id]["totalSetSize"]
     if ("cards" in file["data"][id]):
         for card_count in range(totalSetCards) :        # on parcourt la liste de carte
             if ("uuid" in file["data"][id]["cards"][card_count] ):      
-                resultsorted["data"][id]["cards"][card_count] = {}
+                uuid = file["data"][id]["cards"][card_count]["uuid"]
+                resultsorted["data"][uuid] = {}
 
-                resultsorted["data"][id]["cards"][card_count]["uuid"] = file["data"][id]["cards"][card_count]["uuid"]
+                resultsorted["data"][uuid]["name"]  = file["data"][id]["cards"][card_count]["name"]
 
-                resultsorted["data"][id]["cards"][card_count]["name"] = file["data"][id]["cards"][card_count]["name"]
+                resultsorted["data"][uuid]["extension"] = id 
 
-                resultsorted["data"][id]["cards"][card_count]["extension"] = id 
+                resultsorted["data"][uuid]["releaseDate"] = file["data"][id]["releaseDate"]
 
-                resultsorted["data"][id]["cards"][card_count]["releaseDate"] = file["data"][id]["releaseDate"]
-
-                resultsorted["data"][id]["cards"][card_count]["rarity"] = file["data"][id]["cards"][card_count]["rarity"]
+                resultsorted["data"][uuid]["rarity"] = file["data"][id]["cards"][card_count]["rarity"]
                 
-                resultsorted["data"][id]["cards"][card_count]["manaValue"] = file["data"][id]["cards"][card_count]["manaValue"]
+                resultsorted["data"][uuid]["manaValue"] = file["data"][id]["cards"][card_count]["manaValue"]
 
                 if ("artist" in file["data"][id]["cards"][card_count] ):
-                    resultsorted["data"][id]["cards"][card_count]["artist"] = file["data"][id]["cards"][card_count]["artist"]
+                    resultsorted["data"][uuid]["artist"] = file["data"][id]["cards"][card_count]["artist"]
 
                 if ("power" in file["data"][id]["cards"][card_count] ):
-                    resultsorted["data"][id]["cards"][card_count]["power"] = file["data"][id]["cards"][card_count]["power"]
+                    resultsorted["data"][uuid]["power"] = file["data"][id]["cards"][card_count]["power"]
 
                 if ("toughness" in file["data"][id]["cards"][card_count] ):
-                    resultsorted["data"][id]["cards"][card_count]["toughness"] = file["data"][id]["cards"][card_count]["toughness"]
+                    resultsorted["data"][uuid]["toughness"] = file["data"][id]["cards"][card_count]["toughness"]
                 
                 if (file["data"][id]["cards"][card_count]["supertypes"] ):
-                    resultsorted["data"][id]["cards"][card_count]["supertypes"] = file["data"][id]["cards"][card_count]["supertypes"]
+                    resultsorted["data"][uuid]["supertypes"] = file["data"][id]["cards"][card_count]["supertypes"]
                 
                 if (file["data"][id]["cards"][card_count]["types"] ):
-                    resultsorted["data"][id]["cards"][card_count]["types"] = file["data"][id]["cards"][card_count]["types"]
+                    resultsorted["data"][uuid]["types"] = file["data"][id]["cards"][card_count]["types"]
                 
                 if (file["data"][id]["cards"][card_count]["subtypes"] ):
-                    resultsorted["data"][id]["cards"][card_count]["subtypes"] = file["data"][id]["cards"][card_count]["subtypes"]
+                    resultsorted["data"][uuid]["subtypes"] = file["data"][id]["cards"][card_count]["subtypes"]
                     
                 if (file["data"][id]["cards"][card_count]["legalities"] ):
-                    resultsorted["data"][id]["cards"][card_count]["legalities"] = file["data"][id]["cards"][card_count]["legalities"]
+                    resultsorted["data"][uuid]["legalities"] = file["data"][id]["cards"][card_count]["legalities"]
 
 
 with open('AllPrintingsSorted.json', 'w') as f:

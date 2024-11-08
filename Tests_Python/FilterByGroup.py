@@ -7,20 +7,27 @@ import json
 
 
 with open("AllPrintingsSorted.json", 'r',errors="ignore") as f:
-        file = json.load(f);
+        file = json.load(f)
 
 
 result= {}
 result["meta"] = file["meta"]
 result["data"] = {}
 
-def filter_by_key(key, value):
-        print(1)
-        for id in file["data"]:
-                result["data"][id] = {}
-                result["data"][id]["cards"] = {}
-                totalSetCards = file["data"][id]["totalSetSize"]  
-                for card_count in range(totalSetCards) :       
-                        if (key in file["data"][id]["cards"][card_count] 
-                        and value in file["data"][id]["cards"][card_count][key] ):      
-                                result["data"][id]["cards"][card_count] = {}              
+def filter_by_key(key, value): # Appeler "key" et "valeur" entre guillemets
+        for uuid in file["data"]:
+                if (key in file["data"][uuid]
+                and value in file["data"][uuid][key] ):
+                        if (key == "legalities"):
+                                if (value in file["data"][uuid][key]):
+                                        result["data"] = file["data"]
+                        else:
+                                result["data"] = file["data"][uuid]
+
+
+#filter_by_key("subtypes" , "Human")
+#filter_by_key("power" , "12")
+
+
+with open("TestFilterByKey.json", 'w') as f:
+        json.dump(result,f, indent=4)

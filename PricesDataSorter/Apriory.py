@@ -13,14 +13,28 @@ with open("AllPricesSorted.json", 'r',errors="ignore") as f:
         file = json.load(f)
 
 
-def transactionsFill(day):
+def transactionsFillAugment(day):
     transactionsDay = []
     for uuid in file["data"]:
         if ("prices" in file["data"][uuid]):
              for card in file["data"][uuid]["prices"]:
                 if day in file["data"][uuid]["prices"][card]:
                     value = file["data"][uuid]["prices"][card][day]
-                    if value != 0.0:
+                    if value > 0.0:
+                        transactionsDay.append(uuid)
+
+    return transactionsDay
+
+
+
+def transactionsFillDescent(day):
+    transactionsDay = []
+    for uuid in file["data"]:
+        if ("prices" in file["data"][uuid]):
+             for card in file["data"][uuid]["prices"]:
+                if day in file["data"][uuid]["prices"][card]:
+                    value = file["data"][uuid]["prices"][card][day]
+                    if value < 0.0:
                         transactionsDay.append(uuid)
 
     return transactionsDay
@@ -39,7 +53,7 @@ listOfDays = ["2024-07-17","2024-07-18","2024-07-19","2024-07-20","2024-07-21","
 def transactionFillAllDays():
     transactionsPrices = []
     for date in listOfDays:
-        a = tuple( transactionsFill(str(date)) )
+        a = tuple( transactionsFillAugment(str(date)) )
         transactionsPrices.append(a)
     return transactionsPrices
 
@@ -49,5 +63,11 @@ transactionsPrices = transactionFillAllDays()
 #support = nb of transactions containing A / total nb of transactions
 #confidence = nb of transactions containing A and B / nb of transactions containing A
 
-itemsets, rules = apriori(transactionsPrices, min_support=0.1,  min_confidence=0.5)
-print(rules)
+itemsets, rules = apriori(transactionsPrices, min_support=0.08,  min_confidence=0.5)
+
+for i in range (2,10):
+    try:
+        print(itemsets[i])
+    except:
+        pass
+    print(i)

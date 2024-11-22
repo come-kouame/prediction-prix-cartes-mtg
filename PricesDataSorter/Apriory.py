@@ -1,5 +1,8 @@
 import json
-from efficient_apriori import apriori
+import pandas as ps
+from mlxtend.preprocessing import TransactionEncoder
+from mlxtend.frequent_patterns import apriori
+
 transactions = [('carte1', 'carte2', 'carte3'),
                 ('carte1', 'carte2', 'carte4'),
                 ('carte3', 'carte2', 'carte5')]
@@ -13,7 +16,7 @@ with open("AllPricesSorted.json", 'r',errors="ignore") as f:
         file = json.load(f)
 
 
-def transactionsFillAugment(day):
+def transactionsFill(day):
     transactionsDay = []
     for uuid in file["data"]:
         if ("prices" in file["data"][uuid]):
@@ -21,23 +24,13 @@ def transactionsFillAugment(day):
                 if day in file["data"][uuid]["prices"][card]:
                     value = file["data"][uuid]["prices"][card][day]
                     if value > 0.0:
-                        transactionsDay.append(uuid)
-
-    return transactionsDay
-
-
-
-def transactionsFillDescent(day):
-    transactionsDay = []
-    for uuid in file["data"]:
-        if ("prices" in file["data"][uuid]):
-             for card in file["data"][uuid]["prices"]:
-                if day in file["data"][uuid]["prices"][card]:
-                    value = file["data"][uuid]["prices"][card][day]
+                        transactionsDay.append('+' + uuid)
                     if value < 0.0:
-                        transactionsDay.append(uuid)
+                        transactionsDay.append('-' + uuid)
 
     return transactionsDay
+
+
 
 listOfDays = ["2024-07-17","2024-07-18","2024-07-19","2024-07-20","2024-07-21","2024-07-22","2024-07-23","2024-07-24","2024-07-26","2024-07-27","2024-07-28",
               "2024-07-29","2024-07-30","2024-07-31","2024-08-01","2024-08-02","2024-08-03","2024-08-04","2024-08-05","2024-08-06","2024-08-07","2024-08-08",
@@ -50,70 +43,32 @@ listOfDays = ["2024-07-17","2024-07-18","2024-07-19","2024-07-20","2024-07-21","
               "2024-10-20","2024-10-21","2024-10-22","2024-10-23","2024-10-24","2024-10-25","2024-10-26","2024-10-27","2024-10-28","2024-10-29","2024-10-30",
               "2024-10-31"]
 
+
 def transactionFillAllDays():
     transactionsPrices = []
     for date in listOfDays:
-        a = tuple( transactionsFillAugment(str(date)) )
+        a = list( transactionsFill(str(date)) )
         transactionsPrices.append(a)
     return transactionsPrices
 
-transactionsPrices = transactionFillAllDays()
-
-
+transactionsPrices= transactionFillAllDays()
 #support = nb of transactions containing A / total nb of transactions
 #confidence = nb of transactions containing A and B / nb of transactions containing A
 
-itemsets, rules = apriori(transactionsPrices, min_support=0.08,  min_confidence=0.5)
 
-for i in range (2,10):
-    try:
-        print(itemsets[i])
-    except:
-        pass
-    print(i)
+te = TransactionEncoder()
+te_ary = te.fit(transactionsPrices).transform(transactionsPrices)
+df = ps.DataFrame(te_ary, columns=te.columns_)
+df.head(10)
 
+print(apriori(df, min_support=0.1, use_colnames=True))
 
-def itemsetsResult():
-    itemsets, rules = apriori(transactionsPrices, min_support=0.08,  min_confidence=0.5)
-    result= {}
-    result["data"] = {}
-    for i in range (2,10):
-        result["data"][i] = {}
-        try:
-            result["data"][i] = str(itemsets[i])
-        except:
-            pass
-        
-        with open("itemsetsResult.json", 'w') as f:
-            json.dump(result,f, indent=4)
+# itemsets, rules = apriori(transactionsPrices, min_support=0.08,  min_confidence=0.5)
+# print(rules)
 
-def get_associated_from_itemsets(selected_uuid):
-    with open("data/itemsetsResult.json", 'r',errors="ignore") as f:
-            file = json.load(f)
-    # Parcourir chaque niveau d'itemsets
-    for items_len in file["data"]:
-        for items in file["data"][items_len]:
-            # Vérifier si l'UUID sélectionné est dans l'itemset
-            for i in items:
-                if i == selected_uuid:
-                    print(i)
-
-
-def get_associated_cards_from_simple_rules(rules, selected_uuid):
-    associated_cards = {
-        'as_antecedent': set(),  # Cards where the selected UUID is an antecedent
-        'as_consequent': set(),  # Cards where the selected UUID is a consequent
-    }
-
-    for rule in rules:
-        for antecedent, consequent in rule.items():
-            if antecedent == selected_uuid:
-                associated_cards['as_antecedent'].add(consequent)
-            if consequent == selected_uuid:
-                associated_cards['as_consequent'].add(antecedent)
-
-    # Convert sets to lists for better readability
-    associated_cards['as_antecedent'] = list(associated_cards['as_antecedent'])
-    associated_cards['as_consequent'] = list(associated_cards['as_consequent'])
-
-    return associated_cards
+# for i in range (2,10):
+#     try:
+#         print(itemsets[i])
+#     except:
+#         pass
+#     print(i)

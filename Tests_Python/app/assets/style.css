@@ -1,0 +1,19 @@
+body {
+    font-family:sans-serif;
+    background-color: lightgrey;
+}
+
+.header {
+    background-color: grey;
+    padding: 10px;
+    border-radius: 25px;
+    margin-bottom: 10px;
+}
+
+.header .titre-header {
+    text-align: center;
+    font-size: 50px;
+}
+
+#recherche {
+}

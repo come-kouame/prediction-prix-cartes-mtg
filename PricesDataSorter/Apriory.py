@@ -71,3 +71,49 @@ for i in range (2,10):
     except:
         pass
     print(i)
+
+
+def itemsetsResult():
+    itemsets, rules = apriori(transactionsPrices, min_support=0.08,  min_confidence=0.5)
+    result= {}
+    result["data"] = {}
+    for i in range (2,10):
+        result["data"][i] = {}
+        try:
+            result["data"][i] = str(itemsets[i])
+        except:
+            pass
+        
+        with open("itemsetsResult.json", 'w') as f:
+            json.dump(result,f, indent=4)
+
+def get_associated_from_itemsets(selected_uuid):
+    with open("data/itemsetsResult.json", 'r',errors="ignore") as f:
+            file = json.load(f)
+    # Parcourir chaque niveau d'itemsets
+    for items_len in file["data"]:
+        for items in file["data"][items_len]:
+            # Vérifier si l'UUID sélectionné est dans l'itemset
+            for i in items:
+                if i == selected_uuid:
+                    print(i)
+
+
+def get_associated_cards_from_simple_rules(rules, selected_uuid):
+    associated_cards = {
+        'as_antecedent': set(),  # Cards where the selected UUID is an antecedent
+        'as_consequent': set(),  # Cards where the selected UUID is a consequent
+    }
+
+    for rule in rules:
+        for antecedent, consequent in rule.items():
+            if antecedent == selected_uuid:
+                associated_cards['as_antecedent'].add(consequent)
+            if consequent == selected_uuid:
+                associated_cards['as_consequent'].add(antecedent)
+
+    # Convert sets to lists for better readability
+    associated_cards['as_antecedent'] = list(associated_cards['as_antecedent'])
+    associated_cards['as_consequent'] = list(associated_cards['as_consequent'])
+
+    return associated_cards

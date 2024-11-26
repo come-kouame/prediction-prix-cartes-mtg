@@ -1,7 +1,9 @@
 import json
 import pandas as ps
 from mlxtend.preprocessing import TransactionEncoder
-from mlxtend.frequent_patterns import apriori
+from mlxtend.frequent_patterns import apriori, fpmax, fpgrowth
+from mlxtend.frequent_patterns import association_rules
+
 
 transactions = [('carte1', 'carte2', 'carte3'),
                 ('carte1', 'carte2', 'carte4'),
@@ -12,7 +14,7 @@ transactions = [('carte1', 'carte2', 'carte3'),
 #print(itemsets)
 
 
-with open("AllPricesSorted.json", 'r',errors="ignore") as f:
+with open("data/AllPricesSorted.json", 'r',errors="ignore") as f:
         file = json.load(f)
 
 
@@ -30,18 +32,32 @@ def transactionsFill(day):
 
     return transactionsDay
 
+def fillListOfDays(start,finish):
+    
+    dates = []
+    
+    for month in range (start,finish+1):
+        match month:
+            case 1 | 3 | 5 | 7 | 8:
+                for day in range (1,32):
+                    dates.append("2024-"+"0"+str(month)+"-"+str(day))
+            case 2:
+                for day in range (1,30):
+                    dates.append("2024-"+"0"+str(month)+"-"+str(day))
+            case 4 | 6 | 9:
+                for day in range (1,31):
+                    dates.append("2024-"+"0"+str(month)+"-"+str(day))
+            case 10 | 12:
+                for day in range (1,32):
+                    dates.append("2024-"+str(month)+"-"+str(day))
+            case 11:
+                for day in range (1,31):
+                    dates.append("2024-"+str(month)+"-"+str(day))
+    
+    return dates
 
+listOfDays = fillListOfDays(7,11)
 
-listOfDays = ["2024-07-17","2024-07-18","2024-07-19","2024-07-20","2024-07-21","2024-07-22","2024-07-23","2024-07-24","2024-07-26","2024-07-27","2024-07-28",
-              "2024-07-29","2024-07-30","2024-07-31","2024-08-01","2024-08-02","2024-08-03","2024-08-04","2024-08-05","2024-08-06","2024-08-07","2024-08-08",
-              "2024-08-09","2024-08-10","2024-08-11","2024-08-12","2024-08-13","2024-08-14","2024-08-15","2024-08-16","2024-08-20","2024-08-21","2024-08-22",
-              "2024-08-23","2024-08-24","2024-08-25","2024-08-26","2024-08-28","2024-08-29","2024-08-30","2024-08-31","2024-09-01","2024-09-02","2024-09-04",
-              "2024-09-05","2024-09-06","2024-09-07","2024-09-08","2024-09-09","2024-09-10","2024-09-11","2024-09-12","2024-09-13","2024-09-14","2024-09-15",
-              "2024-09-16","2024-09-17","2024-09-19","2024-09-20","2024-09-21","2024-09-22","2024-09-23","2024-09-24","2024-09-25","2024-09-25","2024-09-26",
-              "2024-09-27","2024-09-28","2024-09-29","2024-09-30","2024-10-02","2024-10-03","2024-10-04","2024-10-05","2024-19-06","2024-10-07","2024-10-08",
-              "2024-10-09","2024-10-10","2024-10-11","2024-10-12","2024-10-13","2024-10-14","2024-10-15","2024-10-16","2024-10-17","2024-10-18","2024-10-19",
-              "2024-10-20","2024-10-21","2024-10-22","2024-10-23","2024-10-24","2024-10-25","2024-10-26","2024-10-27","2024-10-28","2024-10-29","2024-10-30",
-              "2024-10-31"]
 
 
 def transactionFillAllDays():
@@ -59,9 +75,11 @@ transactionsPrices= transactionFillAllDays()
 te = TransactionEncoder()
 te_ary = te.fit(transactionsPrices).transform(transactionsPrices)
 df = ps.DataFrame(te_ary, columns=te.columns_)
-df.head(10)
 
-print(apriori(df, min_support=0.1, use_colnames=True))
+frequent_itemsets = apriori(df, min_support=0.05, use_colnames=True)
+
+rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.5, num_itemsets=600)
+print(rules["confidence"])
 
 # itemsets, rules = apriori(transactionsPrices, min_support=0.08,  min_confidence=0.5)
 # print(rules)

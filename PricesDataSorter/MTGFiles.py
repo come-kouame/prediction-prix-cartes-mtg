@@ -1,4 +1,5 @@
 import json
+from typing import Literal
 
 class MTGFile:
     tree = {}
@@ -26,7 +27,7 @@ class MTGFile:
                 mg = json.load(f)
             self.tree = mg
         else:
-            raise ValueError('Erreur de paramètre')
+            raise ValueError('Erreur de parametre')
 
     def __get_all_prices(self, all_prices_path:str):
         with open(all_prices_path, 'r') as f:
@@ -59,7 +60,8 @@ class MTGFile:
                         uuid = ap['data'][id]['cards'][card_count]['uuid']
                         prints[uuid] = {}
                         prints[uuid]['name'] = ap['data'][id]['cards'][card_count]['name']
-                        prints[uuid]['extension'] = id
+                        prints[uuid]['setCode'] = id
+                        prints[uuid]['setName'] = ap['data'][id]['name']
                         prints[uuid]['releaseDate'] = ap['data'][id]['releaseDate']
                         prints[uuid]["rarity"] = ap["data"][id]["cards"][card_count]["rarity"]
                 
@@ -85,12 +87,39 @@ class MTGFile:
                             
                         if (ap["data"][id]["cards"][card_count]["legalities"] ):
                             prints[uuid]["legalities"] = ap["data"][id]["cards"][card_count]["legalities"]
-
         return prints
 
     def save(self, path:str) -> None:
         with open(path, 'w') as file:
             file.write(json.dumps(self.tree, indent=4))
+        
 
-mtgf = MTGFile(all_prices_path='Data/AllPrices.json', all_printings_path='Data/AllPrintings.json')
-mtgf.save('merged_file.json')
+    def get_tree(self) -> dict:
+        return self.tree
+
+    def get_transactions(self,key_name:Literal['index','uuid','name']) -> dict:
+        result = {}
+        if key_name == 'index':
+            for index in self.tree:
+                for type in self.tree[index]['prices']:
+                    key = f'{index}.{type}'
+                    result[key] = self.tree[index]['prices'][type]
+        elif key_name == 'uuid':
+            for index in self.tree:
+                for type in self.tree[index]['prices']:
+                    key = f'{self.tree[index]['uuid']}.{type}'
+                    result[key] = self.tree[index]['prices'][type]
+        elif key_name == 'name':
+            for index in self.tree:
+                for type in self.tree[index]['prices']:
+                    key = f'{self.tree[index]['setName']}.{self.tree[index]['name']}.{type}'
+                    result[key] = self.tree[index]['prices'][type]
+        else:
+            raise ValueError('Unknown key : ' + key_name)
+        return result
+    
+    def save_transactions(self, path:str, key_name:Literal['index','uuid','name']) -> dict:
+        transactions = self.get_transactions(key_name=key_name)
+        with open(path, 'w') as file:
+            file.write(json.dumps(transactions, indent=4))
+        return transactions

@@ -96,30 +96,66 @@ class MTGFile:
 
     def get_tree(self) -> dict:
         return self.tree
+    
+    def __normalize_transactions(self, prices:dict) -> dict:
+        transactions = {}
+        dates = sorted(prices.keys())
+        transactions[dates[0]] = 0.0
+        for d in range(1, len(dates)):
+            transactions[dates[d]] = (prices[dates[d]] - prices[dates[d - 1]]) / (prices[dates[d]] + prices[dates[d - 1]])
+        return transactions
+    
+    def __is_cst_card(self, prices:dict) -> bool:
+        prcs = list(prices.values())
+        for i in range(1, len(prcs)):
+            if prcs[i] != prcs[i - 1]:
+                return False
+        return True
 
-    def get_transactions(self,key_name:Literal['index','uuid','name']) -> dict:
+    def get_transactions(self,key_name:Literal['index','uuid','name'], normalized:bool, keep_cst_card:bool) -> dict:
         result = {}
         if key_name == 'index':
             for index in self.tree:
                 for type in self.tree[index]['prices']:
                     key = f'{index}.{type}'
-                    result[key] = self.tree[index]['prices'][type]
+                    prices = {}
+                    if normalized:
+                        prices = self.__normalize_transactions(self.tree[index]['prices'][type])
+                    else:
+                        prices = self.tree[index]['prices'][type]
+                    if keep_cst_card or self.__is_cst_card(prices=prices) == False:
+                        result[key] = prices
         elif key_name == 'uuid':
             for index in self.tree:
                 for type in self.tree[index]['prices']:
                     key = f'{self.tree[index]['uuid']}.{type}'
-                    result[key] = self.tree[index]['prices'][type]
+                    prices = {}
+                    if normalized:
+                        prices = self.__normalize_transactions(self.tree[index]['prices'][type])
+                    else:
+                        prices = self.tree[index]['prices'][type]
+                    if keep_cst_card or self.__is_cst_card(prices=prices) == False:
+                        result[key] = prices
         elif key_name == 'name':
             for index in self.tree:
                 for type in self.tree[index]['prices']:
                     key = f'{self.tree[index]['setName']}.{self.tree[index]['name']}.{type}'
-                    result[key] = self.tree[index]['prices'][type]
+                    prices = {}
+                    if normalized:
+                        prices = self.__normalize_transactions(self.tree[index]['prices'][type])
+                    else:
+                        prices = self.tree[index]['prices'][type]
+                    if keep_cst_card or self.__is_cst_card(prices=prices) == False:
+                        result[key] = prices
         else:
             raise ValueError('Unknown key : ' + key_name)
         return result
     
-    def save_transactions(self, path:str, key_name:Literal['index','uuid','name']) -> dict:
-        transactions = self.get_transactions(key_name=key_name)
+    def save_transactions(self, path:str, key_name:Literal['index','uuid','name'], normalized:bool, keep_cst_card:bool) -> dict:
+        transactions = self.get_transactions(key_name=key_name, normalized=normalized, keep_cst_card=keep_cst_card)
         with open(path, 'w') as file:
             file.write(json.dumps(transactions, indent=4))
         return transactions
+
+mtgf = MTGFile(merged_file='Data/merged_file.json')
+mtgf.save_transactions('trans.json', 'index', True, False)

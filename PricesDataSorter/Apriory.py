@@ -14,21 +14,19 @@ transactions = [('carte1', 'carte2', 'carte3'),
 #print(itemsets)
 
 
-with open("data/AllPricesSorted.json", 'r',errors="ignore") as f:
+with open("data/AllTransactions.json", 'r',errors="ignore") as f:
         file = json.load(f)
 
 
 def transactionsFill(day):
     transactionsDay = []
-    for uuid in file["data"]:
-        if ("prices" in file["data"][uuid]):
-             for card in file["data"][uuid]["prices"]:
-                if day in file["data"][uuid]["prices"][card]:
-                    value = file["data"][uuid]["prices"][card][day]
-                    if value > 0.0:
-                        transactionsDay.append('+' + uuid)
-                    if value < 0.0:
-                        transactionsDay.append('-' + uuid)
+    for name in file:
+        if day in file[name]:
+            value = file[name][day]
+            if value > 0.0:
+                transactionsDay.append('+' + name)
+            if value < 0.0:
+                transactionsDay.append('-' + name)
 
     return transactionsDay
 
@@ -76,17 +74,9 @@ te = TransactionEncoder()
 te_ary = te.fit(transactionsPrices).transform(transactionsPrices)
 df = ps.DataFrame(te_ary, columns=te.columns_)
 
-frequent_itemsets = apriori(df, min_support=0.05, use_colnames=True)
+frequent_itemsets = apriori(df, min_support=0.04, use_colnames=True)
 
-rules = association_rules(frequent_itemsets, metric="confidence", min_threshold=0.5, num_itemsets=600)
-print(rules["confidence"])
 
-# itemsets, rules = apriori(transactionsPrices, min_support=0.08,  min_confidence=0.5)
-# print(rules)
+rules = association_rules(frequent_itemsets, metric="conviction", min_threshold=3, num_itemsets=1)
+print(rules[["antecedents","consequents","confidence","conviction","leverage","zhangs_metric"]])
 
-# for i in range (2,10):
-#     try:
-#         print(itemsets[i])
-#     except:
-#         pass
-#     print(i)

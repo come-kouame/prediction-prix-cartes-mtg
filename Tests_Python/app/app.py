@@ -6,6 +6,17 @@ with open("data/AllPrintings.json", 'r',errors="ignore") as f:
 
 app = Dash()
 
+bloc_resultats = [
+    html.Div(
+        className="row",
+        children=[
+            html.Div(f"Résultat {i + j * 4 + 1}", className="column")
+            for i in range(4)
+        ]
+    )
+    for j in range(10)
+]
+
 app.layout = html.Div([
     html.Div(
         className="header",
@@ -14,13 +25,22 @@ app.layout = html.Div([
         ]
     ),
     html.Div(
-        className="cherche",
+        className="main",
         children=[
-            "Rentrez l'id de la carte : ",
-            html.Br(),
-            dcc.Input(id='input-id', type='text', placeholder="Id de la carte"),
-            html.Br(),
-            html.Div(id='nomCarte'),
+            html.Div(
+                className="colonne-recherche colle",
+                children=[
+                    "Rentrez l'id de la carte : ",
+                    html.Br(),
+                    dcc.Input(id='input-id', type='text', placeholder="Id de la carte"),
+                    html.Br(),
+                    html.Div(id='nomCarte'),
+                ]
+            ),
+            html.Div(
+                className="resultats",
+                children=bloc_resultats
+            )
         ]
     )
 ])

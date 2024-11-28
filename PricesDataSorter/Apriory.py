@@ -67,7 +67,21 @@ df = ps.DataFrame(te_ary, columns=te.columns_)
 
 frequent_itemsets = apriori(df, min_support=0.04, use_colnames=True)
 
-
 rules = association_rules(frequent_itemsets, metric="conviction", min_threshold=3, num_itemsets=1)
-print(rules[["antecedents","consequents","confidence","conviction","leverage","zhangs_metric"]])
 
+def get_associated_cards(df, num_of_card):
+
+    associated_in_antecedents = df[df['antecedents'].apply(lambda x: num_of_card in x)]['consequents']
+    associated_in_consequents = df[df['consequents'].apply(lambda x: num_of_card in x)]['antecedents']
+
+    associated_cards = []
+    
+    for cards in associated_in_antecedents:
+        associated_cards.append(cards)
+    for cards in associated_in_consequents:
+        associated_cards.append(cards)
+    
+    
+    return associated_cards
+
+print(get_associated_cards(rules[["antecedents","consequents","confidence","conviction","leverage","zhangs_metric"]],'-10102.normal'))

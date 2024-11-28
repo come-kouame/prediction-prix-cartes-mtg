@@ -5,15 +5,6 @@ from mlxtend.frequent_patterns import apriori, fpmax, fpgrowth
 from mlxtend.frequent_patterns import association_rules
 
 
-transactions = [('carte1', 'carte2', 'carte3'),
-                ('carte1', 'carte2', 'carte4'),
-                ('carte3', 'carte2', 'carte5')]
-
-#itemsets, rules = apriori(transactions, min_support=0.5,  min_confidence=1)
-#print(rules)  
-#print(itemsets)
-
-
 with open("data/AllTransactions.json", 'r',errors="ignore") as f:
         file = json.load(f)
 

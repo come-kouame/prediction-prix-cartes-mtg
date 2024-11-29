@@ -1,11 +1,18 @@
 import json
 from typing import Literal
+import os
+import zipfile
 
 class MTGFile:
     tree = {}
 
     def __init__(self, *, all_prices_path:str=None, all_printings_path:str=None, merged_file:str=None):
-        if all_prices_path != None and all_printings_path != None and merged_file == None:
+        if (
+            all_prices_path != None and 
+            all_printings_path != None and 
+            merged_file == None
+            ):
+
             all_prices = self.__get_all_prices(all_prices_path)
             all_printings = self.__get__all_printings(all_printings_path)
             keys = list(all_prices.keys())
@@ -30,8 +37,18 @@ class MTGFile:
             raise ValueError('Erreur de parametre')
 
     def __get_all_prices(self, all_prices_path:str):
-        with open(all_prices_path, 'r') as f:
-            ap = json.load(f)
+        ap = {}
+        file_name, file_extension = os.path.splitext(all_prices_path)
+        if file_extension == '.zip':
+            with zipfile.ZipFile(all_prices_path, 'r') as zipped_file:
+                with zipped_file.open('AllPrices.json') as file:
+                    ap = json.load(file)
+        elif file_extension == '.json':
+            with open(all_prices_path, 'r') as f:
+                ap = json.load(f)
+        else:
+            raise ValueError('Files allowed are .json and .zip')
+        
         all_prices = {}
         for id in ap['data']:
             if 'paper' in ap['data'][id] and 'cardkingdom' in ap['data'][id]['paper'] and 'retail' in ap['data'][id]['paper']['cardkingdom']:
@@ -49,8 +66,18 @@ class MTGFile:
         return all_prices
 
     def __get__all_printings(self, all_printings_path:str):
-        with open(all_printings_path, 'r',errors="ignore") as f:
-            ap = json.load(f)
+        ap = {}
+        file_name, file_extension = os.path.splitext(all_printings_path)
+        if file_extension == '.zip':
+            with zipfile.ZipFile(all_printings_path, 'r') as zipped_file:
+                with zipped_file.open('AllPrintings.json') as file:
+                    ap = json.load(file)
+        elif file_extension == '.json':
+            with open(all_printings_path, 'r') as f:
+                ap = json.load(f)
+        else:
+            raise ValueError('Files allowed are .json and .zip')
+        
         prints = {}
         for id in ap['data']:
             totalSetCards = ap['data'][id]['totalSetSize']
@@ -156,6 +183,3 @@ class MTGFile:
         with open(path, 'w') as file:
             file.write(json.dumps(transactions, indent=4))
         return transactions
-
-mtgf = MTGFile(merged_file='Data/merged_file.json')
-mtgf.save_transactions('trans.json', 'index', True, False)

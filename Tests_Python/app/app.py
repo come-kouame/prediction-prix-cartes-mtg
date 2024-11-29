@@ -6,17 +6,6 @@ with open("data/AllPrintings.json", 'r',errors="ignore") as f:
 
 app = Dash()
 
-bloc_resultats = [
-    html.Div(
-        className="row",
-        children=[
-            html.Div(f"Résultat {i + j * 4 + 1}", className="column")
-            for i in range(4)
-        ]
-    )
-    for j in range(10)
-]
-
 app.layout = html.Div([
     html.Div(
         className="header",
@@ -30,38 +19,81 @@ app.layout = html.Div([
             html.Div(
                 className="colonne-recherche colle",
                 children=[
-                    "Rentrez l'id de la carte : ",
-                    html.Br(),
-                    dcc.Input(id='input-id', type='text', placeholder="Id de la carte"),
-                    html.Br(),
-                    html.Div(id='nomCarte'),
+                    "Recherche",
+                    dcc.Input(id='input', type='text', placeholder="Id de la carte"),
+                    dcc.Dropdown(['','Recherche par id','Recherche par nom','Recherche par artiste'],'Recherche par id',id='parametres-dropdown',searchable=False),
+                    html.Div(id='resultatRecherche'),
                 ]
             ),
             html.Div(
                 className="resultats",
-                children=bloc_resultats
+                id='bloc-resultats'
             )
         ]
     )
 ])
-
+        
 @callback(
-    Output(component_id='nomCarte', component_property='children'),
-    Input(component_id='input-id', component_property='value')
+    Output(component_id='bloc-resultats', component_property='children'),
+    Input(component_id='input', component_property='value'),
+    Input(component_id='parametres-dropdown', component_property='value')
 )
-def afficheCarte(id_input):
+def afficheResultats(input, parametres_dropdown):
+    match parametres_dropdown:
+        case 'Recherche par id':
+            resultats = rechercheParId(input)
+        case 'Recherche par nom':
+            resultats = rechercheParNom(input)
+        case 'Recherche par artiste':
+            resultats = rechercheParArtiste(input)
+        case _:
+            resultats = []
+    bloc_resultats = [
+        html.Div(
+            className="row",
+            children=[
+                html.Div(f"{resultat}", className="column")
+                for resultat in resultats
+            ]
+        )
+    ]
+
+    return bloc_resultats
+
+def rechercheParId(input):
     for set_id in file["data"]:                                         
-        if "cards" in file["data"][set_id]:                             # Vérification si le set contient des cartes
-            for card in file["data"][set_id]["cards"]:                  # Parcours de chaque carte dans le set
-                if card["uuid"] == id_input:                            # Accéder à la carte courante
-                    return f'{card["name"]}'                            # Affiche le nom de la carte correspondante
+        if "cards" in file["data"][set_id]:
+            for card in file["data"][set_id]["cards"]:
+                if card["uuid"] == input:
+                    return [f'{card["name"]}']
             else:
-                continue                                                # Continue si aucune carte ne correspond dans ce set
+                continue
     else:
-        return f'Carte non trouvée.'
+        return [f'Carte non trouvée.']
 
+def rechercheParNom(input):
+    found_ids=[]
+    for set_id in file["data"]:                                     
+        if "cards" in file["data"][set_id]:                         # Vérification si le set contient des cartes
+            for card in file["data"][set_id]["cards"]:              # Parcours de chaque carte dans le set
+                if "name" in card and card["name"] == input:                      # Accéder à la carte courante
+                    found_ids.append(card["uuid"])
+    if found_ids:
+        return found_ids
+    else:
+        return [f'Carte(s) non trouvée(s)']
 
-
+def rechercheParArtiste(input):
+    found_ids=[]
+    for set_id in file["data"]:
+        if "cards" in file["data"][set_id]:
+            for card in file["data"][set_id]["cards"]:
+                if "artist" in card and card["artist"] == input:
+                    found_ids.append(card["uuid"])
+    if found_ids:
+        return found_ids
+    else:
+        return [f'Carte(s) non trouvée(s)']
 
 if __name__ == '__main__':
     app.run(debug=True)

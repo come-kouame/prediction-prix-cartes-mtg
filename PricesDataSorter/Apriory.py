@@ -84,11 +84,19 @@ def get_associated_cards(df, num_of_card):
 
     return associated_cards
 
-def priceHasVaried(list,day):
+def clean_duplicates(cards):
+    cleaned_cards = set(card.replace("-", "").replace("+", "") for card in cards)
 
+    cleaned_cards_list = list(cleaned_cards)
+
+    return cleaned_cards_list
+
+
+def priceHasVaried(cardlist,day):
     boolList = []
-    for card in list:
+    for card in cardlist:
         if card in file:
+            print(card)
             if day in file[card]:
                 value = file[card][day]
                 print(value)
@@ -97,17 +105,18 @@ def priceHasVaried(list,day):
                 if value < 0.0:
                     boolList.append(True)
 
-
+    print(boolList)
     return boolList
+
     
-def variationLikelyhood(list):
+def variationLikelyhood(cardlist):
     variedCount = 0
-    if len(list)==0:
+    if (len(cardlist)==0):
         return -1.0
-    for i in range(0,len(list)):
+    for i in range(0,len(cardlist)):
         variedCount+=1
 
-    return (variedCount/len(list))
+    return (variedCount/len(cardlist))
 
 
 def predictPrice(num_of_card,day_of_prediction,boolFoil):
@@ -124,12 +133,15 @@ def predictPrice(num_of_card,day_of_prediction,boolFoil):
 
     associated_list_minus = [" ".join(item) for item in associated_list]
     associated_list_plus = [" ".join(item) for item in associated_list2]
-    print(associated_list_minus)
+    
 
-    boolListMinus = []
-    boolListPlus = []
-    boolListMinus = priceHasVaried(associated_list_minus,day_of_prediction)
-    boolListPlus = priceHasVaried(associated_list_plus,day_of_prediction)
+    no_duplicate_list_minus = clean_duplicates(associated_list_minus)
+    no_duplicate_list_plus = clean_duplicates(associated_list_plus)
+
+
+    boolListMinus = priceHasVaried(no_duplicate_list_minus,day_of_prediction)
+    boolListPlus = priceHasVaried(no_duplicate_list_plus,day_of_prediction)
+
 
     predictFractionMinus = variationLikelyhood(boolListMinus)
     predictFractionPlus = variationLikelyhood(boolListPlus)
@@ -137,6 +149,7 @@ def predictPrice(num_of_card,day_of_prediction,boolFoil):
     print("La carte a "+str(predictFractionMinus)+" chances de baisser en prix")
     print("La carte a "+str(predictFractionPlus)+" chances d'augmenter en prix")
 
-predictPrice(10102,"2024-08-15",False)
-# print(get_associated_cards(rules,'-10102.normal'))
+
+# print(get_associated_cards(rules,'-81382.normal'))
+predictPrice(81382,"2024-10-10",False)
 

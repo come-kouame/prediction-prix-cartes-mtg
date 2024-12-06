@@ -81,7 +81,62 @@ def get_associated_cards(df, num_of_card):
     for cards in associated_in_consequents:
         associated_cards.append(cards)
     
-    
+
     return associated_cards
 
-print(get_associated_cards(rules[["antecedents","consequents","confidence","conviction","leverage","zhangs_metric"]],'-10102.normal'))
+def priceHasVaried(list,day):
+
+    boolList = []
+    for card in list:
+        if card in file:
+            if day in file[card]:
+                value = file[card][day]
+                print(value)
+                if value > 0.0:
+                    boolList.append(True)
+                if value < 0.0:
+                    boolList.append(True)
+
+
+    return boolList
+    
+def variationLikelyhood(list):
+    variedCount = 0
+    if len(list)==0:
+        return -1.0
+    for i in range(0,len(list)):
+        variedCount+=1
+
+    return (variedCount/len(list))
+
+
+def predictPrice(num_of_card,day_of_prediction,boolFoil):
+    
+    if boolFoil:
+        num_of_card_plus = '+'+str(num_of_card)+".foil"
+        num_of_card_minus = '-'+str(num_of_card)+".foil"
+    else:
+        num_of_card_plus = '+'+str(num_of_card)+".normal"
+        num_of_card_minus = '-'+str(num_of_card)+".normal"
+
+    associated_list = get_associated_cards(rules,num_of_card_minus)
+    associated_list2 = get_associated_cards(rules,num_of_card_plus)
+
+    associated_list_minus = [" ".join(item) for item in associated_list]
+    associated_list_plus = [" ".join(item) for item in associated_list2]
+    print(associated_list_minus)
+
+    boolListMinus = []
+    boolListPlus = []
+    boolListMinus = priceHasVaried(associated_list_minus,day_of_prediction)
+    boolListPlus = priceHasVaried(associated_list_plus,day_of_prediction)
+
+    predictFractionMinus = variationLikelyhood(boolListMinus)
+    predictFractionPlus = variationLikelyhood(boolListPlus)
+
+    print("La carte a "+str(predictFractionMinus)+" chances de baisser en prix")
+    print("La carte a "+str(predictFractionPlus)+" chances d'augmenter en prix")
+
+predictPrice(10102,"2024-08-15",False)
+# print(get_associated_cards(rules,'-10102.normal'))
+

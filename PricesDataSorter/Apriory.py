@@ -65,9 +65,15 @@ te = TransactionEncoder()
 te_ary = te.fit(transactionsPrices).transform(transactionsPrices)
 df = ps.DataFrame(te_ary, columns=te.columns_)
 
-frequent_itemsets = apriori(df, min_support=0.04, use_colnames=True)
+frequent_itemsets = apriori(df, min_support=0.035, use_colnames=True)
 
 rules = association_rules(frequent_itemsets, metric="conviction", min_threshold=3, num_itemsets=1)
+
+
+###############################################################################
+# Prediction des prix
+
+
 
 def get_associated_cards(df, num_of_card):
 
@@ -150,6 +156,66 @@ def predictPrice(num_of_card,day_of_prediction,boolFoil):
     print("La carte a "+str(predictFractionPlus)+" chances d'augmenter en prix")
 
 
-# print(get_associated_cards(rules,'-81382.normal'))
-predictPrice(81382,"2024-10-10",False)
+print(rules)
+# print(get_associated_cards(rules,'+81382.normal'))
+# predictPrice(81382,"2024-10-10",False)
 
+
+
+#####################################################################################################
+# PYVIS 
+
+
+from pyvis.network import Network
+
+
+def rulesVisuals():
+    
+
+    frequent_itemsets = apriori(df, min_support=0.035, use_colnames=True)
+    rules = association_rules(frequent_itemsets, metric="conviction", min_threshold=3, num_itemsets=1)
+
+    rules["antecedents"]=rules["antecedents"].astype(str)
+    rules["consequents"]=rules["consequents"].astype(str)
+
+    print(rules)
+    card_Network=Network(height="1000px", width="1000px", directed=True, notebook=True)
+    card_Network.force_atlas_2based()
+    #card_Network.barnes_hut()
+    #card_Network.hrepulsion()
+    #card_Network.repulsion()
+
+    rules_zip=zip(rules["antecedents"],
+                        rules["consequents"],
+                        rules["antecedent support"],
+                        rules["consequent support"],
+                        rules["confidence"])
+
+
+    for i in rules_zip:
+        FromItem=i[0].replace("frozenset({'","").replace("'})","").replace("',　'",",")
+        ToItem=i[1].replace("frozenset({'","").replace("'})","").replace("',　'",",")
+        FromWeight=i[2]
+        ToWeight=i[3]
+        EdgeWeight=i[4]
+
+        card_Network.add_node(n_id=FromItem, shape="dot", value=FromWeight, title=FromItem + "<br>Support: " + str(FromWeight))
+        card_Network.add_node(n_id=ToItem, shape="dot", value=ToWeight, title=ToItem + "<br>Support: " + str(ToWeight))
+        card_Network.add_edge(source=FromItem, to=ToItem, value=EdgeWeight, arrowStrikethrough=False, title=FromItem + " --> " + ToItem + "<br>Confidence:" + str(EdgeWeight))
+
+
+
+
+    card_Network.set_edge_smooth(smooth_type="continuous")
+    card_Network.toggle_hide_edges_on_drag(True)
+    card_Network.show_buttons(filter_=False)
+
+    card_Network.save_graph("Card_Network.html")
+    card_Network.show("Card_Network.html")
+
+
+    #card_Network.get_adj_list()
+    #card_Network.get_edges()
+    #card_Network.get_network_data()
+
+rulesVisuals()

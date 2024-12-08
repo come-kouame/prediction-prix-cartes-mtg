@@ -69,6 +69,8 @@ frequent_itemsets = apriori(df, min_support=0.035, use_colnames=True)
 
 rules = association_rules(frequent_itemsets, metric="conviction", min_threshold=3, num_itemsets=1)
 
+rules.to_json('regles.json')
+
 # print(rules)
 
 ##############################################################################################################################################################
@@ -206,11 +208,12 @@ def rulesVisuals():
     rules = association_rules(frequent_itemsets, metric="conviction", min_threshold=3, num_itemsets=1)
     rules[["antecedents","consequents","confidence","lift"]].to_json('regles2.json')
 
+    
     rules["antecedents"]=rules["antecedents"].astype(str)
     rules["consequents"]=rules["consequents"].astype(str)
 
     # print(rules)
-    card_Network=Network(height="1000px", width="1000px", directed=True, notebook=True)
+    card_Network=Network(height="1000px", width="1000px", directed=True, notebook=True,filter_menu=True)
     card_Network.force_atlas_2based()
     #card_Network.barnes_hut()
     #card_Network.hrepulsion()

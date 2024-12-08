@@ -69,8 +69,9 @@ frequent_itemsets = apriori(df, min_support=0.035, use_colnames=True)
 
 rules = association_rules(frequent_itemsets, metric="conviction", min_threshold=3, num_itemsets=1)
 
+# print(rules)
 
-###############################################################################
+##############################################################################################################################################################
 # Prediction des prix
 
 
@@ -156,29 +157,59 @@ def predictPrice(num_of_card,day_of_prediction,boolFoil):
     print("La carte a "+str(predictFractionPlus)+" chances d'augmenter en prix")
 
 
-print(rules)
 # print(get_associated_cards(rules,'+81382.normal'))
 # predictPrice(81382,"2024-10-10",False)
 
 
 
-#####################################################################################################
+#####################################################################################################################################################################
 # PYVIS 
 
 
 from pyvis.network import Network
 
+with open("data/AllPricesSorted.json", 'r',errors="ignore") as f:
+        file = json.load(f)
+
+def getNames(entry):
+    string = entry.split(",")
+    sign= str()
+    ending= str()
+    string_result = list()
+    for name in string:
+        if name.startswith(("+","-")):
+            sign = name[0]
+            name=name.replace("-","").replace("+","")
+        if name.endswith((".normal")):
+            ending = ".normal"
+        if name.endswith((".foil")):
+            ending = ".foil"
+        if name.endswith((".etched")):
+            ending = ".etched"
+        
+        name=name.replace(".normal","").replace(".foil","").replace(".etched","")
+
+        if name in file:
+                name = file[name]["name"]+"."+file[name]["setName"] 
+
+        string_result.append(sign + name + ending)
+        new_string = ",".join(string_result)
+
+
+    return str(new_string)
+
 
 def rulesVisuals():
     
 
-    frequent_itemsets = apriori(df, min_support=0.035, use_colnames=True)
+    frequent_itemsets = apriori(df, min_support=0.04, use_colnames=True)
     rules = association_rules(frequent_itemsets, metric="conviction", min_threshold=3, num_itemsets=1)
+    rules[["antecedents","consequents","confidence","lift"]].to_json('regles2.json')
 
     rules["antecedents"]=rules["antecedents"].astype(str)
     rules["consequents"]=rules["consequents"].astype(str)
 
-    print(rules)
+    # print(rules)
     card_Network=Network(height="1000px", width="1000px", directed=True, notebook=True)
     card_Network.force_atlas_2based()
     #card_Network.barnes_hut()
@@ -193,8 +224,10 @@ def rulesVisuals():
 
 
     for i in rules_zip:
-        FromItem=i[0].replace("frozenset({'","").replace("'})","").replace("',　'",",")
-        ToItem=i[1].replace("frozenset({'","").replace("'})","").replace("',　'",",")
+        FromItem=i[0].replace("frozenset({'","").replace("'})","").replace("', '",",")
+        FromItem=getNames(FromItem)
+        ToItem=i[1].replace("frozenset({'","").replace("'})","").replace("', '",",")
+        ToItem=getNames(ToItem)
         FromWeight=i[2]
         ToWeight=i[3]
         EdgeWeight=i[4]
@@ -205,17 +238,15 @@ def rulesVisuals():
 
 
 
-
     card_Network.set_edge_smooth(smooth_type="continuous")
     card_Network.toggle_hide_edges_on_drag(True)
     card_Network.show_buttons(filter_=False)
-
     card_Network.save_graph("Card_Network.html")
     card_Network.show("Card_Network.html")
-
-
+    
     #card_Network.get_adj_list()
     #card_Network.get_edges()
     #card_Network.get_network_data()
+
 
 rulesVisuals()

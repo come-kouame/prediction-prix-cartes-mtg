@@ -125,15 +125,17 @@ def extraireDernierPrix(prices):
 
 
 @app.callback(
-    [Output('bloc-resultats', 'children'), Output('retour-btn', 'style')],
-    [Input('input', 'value'), Input('parametres-dropdown', 'value'),
+    [Output('bloc-resultats', 'children'),
+     Output('retour-btn', 'style')],
+    [Input('input', 'value'),
+     Input('parametres-dropdown', 'value'),
      Input({'type': 'result-item', 'index': ALL}, 'n_clicks'),
      Input('retour-btn', 'n_clicks')],
     [State({'type': 'result-item', 'index': ALL}, 'children')]
 )
 def navigationEntreEtats(input_value, dropdown_value, result_clicks, retour_click, result_texts):
     ctx = dash.callback_context
-
+    
     if not ctx.triggered:
         raise PreventUpdate
 
@@ -155,7 +157,6 @@ def navigationEntreEtats(input_value, dropdown_value, result_clicks, retour_clic
                 set_code = details.get("setCode", "N/A")
                 artist = details.get("artist", "N/A")
                 rarity = details.get("rarity", "N/A")
-                legalities = details.get("legalities", {})
                 prices_textes = extraireDernierPrix(details.get("prices", {}))
 
                 return html.Div(className="details-carte", children=[
@@ -170,4 +171,3 @@ def navigationEntreEtats(input_value, dropdown_value, result_clicks, retour_clic
 
 if __name__ == '__main__':
     app.run(debug=True)
-

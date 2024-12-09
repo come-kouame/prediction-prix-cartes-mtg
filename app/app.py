@@ -7,17 +7,19 @@ with open("data/AllPricesSorted.json", 'r',errors="ignore") as f:
     file = json.load(f)
 
 def rechercheParId(input):
-    for card_id, card_data in file.items():
-        if card_data.get("uuid") == input:
-            return [f"{card_data.get('name')} ({card_data.get('setCode')})"]
+    for card_id in file:
+        if "uuid" in file[card_id]:
+            if file[card_id]["uuid"] == input:
+                return [f"{file[card_id]["name"]} ({file[card_id]["setCode"]})"]
     else:
         return [f'Carte non trouvée.']
-    
+
 def rechercheParNom(input):
     found_ids=[]
-    for card_id,card_data in file.items():
-        if card_data.get("name") == input:
-            found_ids.append(f"{card_data.get('name')} ({card_data.get('setCode')})")
+    for card_id in file:
+        if "name" in file[card_id]:
+            if file[card_id]["name"] == input:
+                found_ids.append(f"{file[card_id]["name"]} ({file[card_id]["setCode"]})")
     if found_ids:
         return found_ids
     else:
@@ -25,9 +27,10 @@ def rechercheParNom(input):
 
 def rechercheParSetCode(input):
     found_ids=[]
-    for card_id,card_data in file.items():
-        if card_data.get("setCode") == input:
-            found_ids.append(f"{card_data.get('name')} ({card_data.get('setCode')})")
+    for card_id in file:
+        if "setCode" in file[card_id]:
+            if file[card_id]["setCode"] == input:
+                found_ids.append(f"{file[card_id]["name"]} ({file[card_id]["setCode"]})")
     if found_ids:
         return found_ids
     else:
@@ -35,9 +38,10 @@ def rechercheParSetCode(input):
 
 def rechercheParArtiste(input):
     found_ids = []
-    for card_id, card_data in file.items():
-        if card_data.get("artist") and card_data.get("artist") == input:
-            found_ids.append(f"{card_data.get('name')} ({card_data.get('setCode')})")
+    for card_id in file:
+        if "artist" in file[card_id]:
+            if file[card_id]["artist"] == input:
+                found_ids.append(f"{file[card_id]["name"]} ({file[card_id]["setCode"]})")
     if found_ids:
         return found_ids
     else:
@@ -60,17 +64,13 @@ def afficheResultats(input, parametres_dropdown):
     blocs = []
     for i, resultat in enumerate(resultats):
         bloc = html.Div(
-            f"{resultat}",
+            resultat,
             id={'type': 'result-item', 'index': i},
             className="column",
             style={'cursor': 'pointer'}
         )
         blocs.append(bloc)
-
-    return html.Div(
-        className="row",
-        children=blocs
-    )
+    return html.Div(className="row", children=blocs)
 
 app.layout = html.Div([
     dcc.Store(id='app-state', data='results'),
@@ -106,11 +106,27 @@ app.layout = html.Div([
     )
 ])
 
+#Fonction pour récupérer les derniers prix d'une carte selon le type de carte
+def extraireDernierPrix(prices):
+    prix_textes = []
+
+    if not prices:
+        return ["Prix non disponible"]
+    
+    for card_type in prices:
+        valeurs = prices[card_type]
+        if valeurs and isinstance(valeurs, dict):
+            derniere_date = sorted(valeurs.keys())[-1]  # Pour avoir la dernière date
+            prix = valeurs[derniere_date]
+            prix_textes.append(f"{card_type.capitalize()} : {prix} (le {derniere_date})")
+
+    return prix_textes if prix_textes else ["Aucun prix disponible"]
+
+
+
 @app.callback(
-    [Output('bloc-resultats', 'children'),
-     Output('retour-btn', 'style')],
-    [Input('input', 'value'),
-     Input('parametres-dropdown', 'value'),
+    [Output('bloc-resultats', 'children'), Output('retour-btn', 'style')],
+    [Input('input', 'value'), Input('parametres-dropdown', 'value'),
      Input({'type': 'result-item', 'index': ALL}, 'n_clicks'),
      Input('retour-btn', 'n_clicks')],
     [State({'type': 'result-item', 'index': ALL}, 'children')]
@@ -121,33 +137,35 @@ def navigationEntreEtats(input_value, dropdown_value, result_clicks, retour_clic
     if not ctx.triggered:
         raise PreventUpdate
 
-    # Vérifie si le bouton de retour a été cliqué
     if 'retour-btn.n_clicks' in ctx.triggered_id:
-        # Réinitialise l'affichage à la page de recherche principale
         return afficheResultats(input_value, dropdown_value), {'display': 'none'}
 
-    # Gère la logique de clic sur les résultats
-    if result_clicks and any(nc for nc in result_clicks):
+    if result_clicks and any(result_clicks):
         clicked_index = next((i for i, nc in enumerate(result_clicks) if nc), None)
-        if clicked_index is not None:
-            resultat = result_texts[clicked_index]
-            infos_carte = {
-                'Nom': resultat,
-                'Prix': '10€',
-                'Extension': 'Magic Set',
-                'Artiste': 'John Doe'
-            }
-            return html.Div(
-                className="details-carte",
-                children=[
-                    html.H2(f"Détails de la carte : {infos_carte['Nom']}"),
-                    html.P(f"Prix : {infos_carte['Prix']}"),
-                    html.P(f"Extension : {infos_carte['Extension']}"),
-                    html.P(f"Artiste : {infos_carte['Artiste']}"),
-                ]
-            ), {'display': 'block'}
+        if clicked_index is not None and clicked_index < len(result_texts):
+            card_name = result_texts[clicked_index]
+            details = next(
+                (card for card_id, card in file.items() 
+                 if f"{card['name']} ({card['setCode']})" == card_name),
+                None
+            )
+            if details:
+                name = details.get("name", "N/A")
+                set_name = details.get("setName", "N/A")
+                set_code = details.get("setCode", "N/A")
+                artist = details.get("artist", "N/A")
+                rarity = details.get("rarity", "N/A")
+                legalities = details.get("legalities", {})
+                prices_textes = extraireDernierPrix(details.get("prices", {}))
 
-    # Sinon, renvoie les résultats principaux
+                return html.Div(className="details-carte", children=[
+                    html.H2(f"Détails de la carte : {name}"),
+                    html.P(f"Set : {set_name} ({set_code})"),
+                    html.P(f"Artiste : {artist}"),
+                    html.P(f"Rareté : {rarity}"),
+                    html.Div([html.P(prix) for prix in prices_textes]),
+                ]), {'display': 'block'}
+
     return afficheResultats(input_value, dropdown_value), {'display': 'none'}
 
 if __name__ == '__main__':

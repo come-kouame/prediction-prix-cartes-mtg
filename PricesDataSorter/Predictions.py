@@ -68,11 +68,11 @@ class Predictions:
             self.event.add_set(set_code=s)
         for s in used_sets_names:
             self.event.add_set(set_name=s)
-        
-
-    def get_last_transaction(self, card_id: str) -> datetime.datetime:
+    
+    def get_last_transaction(self, card_id: str) -> float:
         date = max(self.transactions[card_id].keys(), key=lambda d: datetime.datetime.strptime(d, '%Y-%m-%d'))
         return self.transactions[card_id][date]
+
 
     def get_predictions(self) -> list:
         """
@@ -121,7 +121,7 @@ class Predictions:
                 # Augmenter la valeur chaque jour des cartes de l'évenemnt
                 add_price = float(d) / ndays * reach_value
                 # Ajouter du bruit
-                add_price += reach_value / 10.0 * (random.randint(0, 1) * 2 - 1)
+                add_price += reach_value / 10.0 * random.uniform(0, 2.0)
                 date = str((self.last_transaction + datetime.timedelta(days=d)).date())
                 self.transactions[c][date] = round(last_known_price + add_price, 2)
                 
@@ -149,9 +149,25 @@ class Predictions:
         """
         impacted_cards = self.get_predictions()
         with open(predictions_path, 'w') as file:
-            file.write(json.dumps(self.transactions))
+            file.write(json.dumps(self.transactions, indent=4))
+        return impacted_cards
+
+    def save_predictions_in_cards_data(self, merged_file_path: str):
+        """
+        Appelle la méthode get_predictions()\n
+        Sauvegarde les prédiction dans le fichier fusionné de AllPrintings et AllPrices\n
+        Renvoie les cartes concernées par la prévision
+        """
+        impacted_cards = self.get_predictions()
+        for c in impacted_cards:
+            index = c.split('.')[0]
+            rare = c.split('.')[1]
+            self.cards_data[index]['prices'][rare] = self.transactions[c]
+        with open(merged_file_path, 'w') as file:
+            file.write(json.dumps(self.cards_data, indent=4))
         return impacted_cards
     
+
     def separate(self, card_uuid: str):
         """
         Récupère les transaction d'une carte et retourne deux tuples :\n
@@ -168,9 +184,10 @@ class Predictions:
         Affiche un graphique avec les transactions connues (bleu) et attendues (rouge)
         """
         olds, news = self.separate(card_uuid)
-        plt.title(card_uuid)
+        plt.title(self.cards_data[card_uuid.split('.')[0]]['name'])
         plt.plot(olds.keys(), olds.values(), 'b')
         plt.plot(news.keys(), news.values(), 'r')
+        plt.legend(['Known', 'Expected'])
         plt.show()
 
 
@@ -191,14 +208,15 @@ predictions =  Predictions(
     1000,
     used_sets_names=['Kaldheim Promos']
     )
-# Appel de la fonction de prédiction 
-# Sauvegarde toutes les transactions (connues + attentues) dans un nouveau fichier
-# Retourne une liste avec toutes les cartes impactées par les prédictions
-impacted_cards = predictions.save_predictions('Data/AllPredictions.json')
-# La méthode separate() renvoie les transactions connues puis les transactions attendues
-knowns, expecteds = predictions.separate('45925.foil')
-# La méthode show_prediction() affiche un graph qui montre les transactions connues et attendues
-predictions.show_predictions('45926.foil')          # Carte jouée à l'évènement
-predictions.show_predictions('45987.normal')        # Carte jouée à l'évènement
-predictions.show_predictions('16440.normal')        # Carte non jouée à l'évènement
-predictions.show_predictions('1777.normal')         # Carte non jouée à l'évènement
+predictions.save_predictions_in_cards_data('Data/AllPrevisionsSorted.json')
+# # Appel de la fonction de prédiction 
+# # Sauvegarde toutes les transactions (connues + attentues) dans un nouveau fichier
+# # Retourne une liste avec toutes les cartes impactées par les prédictions
+# impacted_cards = predictions.save_predictions('Data/AllPredictions.json')
+# # La méthode separate() renvoie les transactions connues puis les transactions attendues
+# knowns, expecteds = predictions.separate('45925.foil')
+# # La méthode show_prediction() affiche un graph qui montre les transactions connues et attendues
+# predictions.show_predictions('45926.foil')          # Carte jouée à l'évènement
+# predictions.show_predictions('45987.normal')        # Carte jouée à l'évènement
+# predictions.show_predictions('16440.normal')        # Carte non jouée à l'évènement
+# predictions.show_predictions('1777.normal')         # Carte non jouée à l'évènement

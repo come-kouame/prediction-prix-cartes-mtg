@@ -31,7 +31,13 @@ L'application s'utilise de la manière suivante
 Contient toutes les données utiles au projet :
 | Nom du fichier        |      Description                 |
 |:---------------------:|:--------------------------------:|
-| AllPrintings.json     | Contient toutes les informations sur toutes les cartes (sauf le prix). Peut ête obtenu via MTGJson.com |
+| AllPrintings.json     | Contient toutes les informations sur toutes les cartes (sauf le prix).\nPeut ête obtenu via MTGJson.com |
+| AllPrices.json        | Contient le prix de toutes les cartes.\nPeut être obtenu via MTGJson.com |
+| AllPricesSorted.json  | Contient un fichier fusionné de AllPrintings.json et AllPrices.json.\nObtenu grâce à MTGFiles.py |
+| AllTransactions.json  | Contient toutes les transactions normalisées des cartes de AllPricesSorted.json.\nObtenu grâce à MTGFiles.py |
+| AllPredictionsSorted.json | Contient AllPricesSorted.json mais avec des prédictions sur certaines cartes (ex : 1777.normal). \nObtenu grâce à Predictions.py |
+| regles.json           | Contient une grande quantité de règles Apriori.\nObtenu grâce à Apriory.py |
+| regles2.json          | Contient quelques règles Apriori.\nObtenu grâce à Apriory.py |
 
 ### dossier PricesDataSorter
 Là où se trouve les fonctions de triage des donnée ainsi que l'algorithme Apriori

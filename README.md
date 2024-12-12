@@ -11,7 +11,7 @@ Nous avons également réalisé une application web permettant de visualisé la 
 
 # Installation
 
-Il est nécessaire d'avoir Dash, mltxtend, pandas et matplotlib installés.
+Il est nécessaire d'avoir Dash, Pyvis, mltxtend, pandas et matplotlib installés.
 
 ( Optionnel )
 Apres téléchargement vous pouvez remplacer les fichiers json dans data par les plus récents fournis par MTGJSON : https://mtgjson.com/downloads/all-files/ 

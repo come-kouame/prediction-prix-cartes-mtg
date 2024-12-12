@@ -3,11 +3,9 @@ import dash
 from dash import Dash, dcc, html, Input, Output, callback, State, ALL
 from dash.exceptions import PreventUpdate
 import requests
-from urllib.parse import quote
 
 with open("data/AllPredictionsSorted.json", 'r',errors="ignore") as f:
     file = json.load(f)
-
 
 # Recherche une carte par son numéro identifiant dans le fichier et renvoie l'uuid de ladite carte
 def rechercheParId(input):
@@ -17,6 +15,7 @@ def rechercheParId(input):
     else:
         return [f'Carte(s) non trouvée(s)']
 
+# Recherche une carte par son uuid dans le fichier et renvoie l'uuid de ladite carte
 def rechercheParUuid(input):
     for card_id in file:
         if "uuid" in file[card_id]:
@@ -25,6 +24,7 @@ def rechercheParUuid(input):
     else:
         return [f'Carte non trouvée.']
 
+# Recherche les cartes portant le nom en entrée dans le fichier et renvoie l'uuid de ladite carte
 def rechercheParNom(input):
     found_ids=[]
     for card_id in file:
@@ -36,6 +36,7 @@ def rechercheParNom(input):
     else:
         return [f'Carte(s) non trouvée(s)']
 
+# Recherche les cartes appartenant au set dont le code est en entrée dans le fichier et renvoie l'uuid de ladite carte
 def rechercheParSetCode(input):
     found_ids=[]
     for card_id in file:
@@ -47,6 +48,7 @@ def rechercheParSetCode(input):
     else:
         return [f'Carte(s) non trouvée(s)']
 
+# Recherche les cartes dessinées par l'artiste dans le fichier et renvoie l'uuid de ladite carte
 def rechercheParArtiste(input):
     found_ids = []
     for card_id in file:
@@ -56,9 +58,11 @@ def rechercheParArtiste(input):
     if found_ids:
         return found_ids
     else:
-        return [f'Carte(s) non trouvée(s)']    
+        return [f'Carte(s) non trouvée(s)']
+
 app = Dash(__name__, suppress_callback_exceptions=True)
 
+# Layout de l'application
 app.layout = html.Div([
     dcc.Store(id='app-state', data='results'),
     html.Div(
@@ -111,7 +115,6 @@ def afficheResultats(input, parametres_dropdown):
             resultats = []
 
     blocs = []
-
     for i, uuid in enumerate(resultats):
         details_carte = None
         for card_id in file:
@@ -123,7 +126,8 @@ def afficheResultats(input, parametres_dropdown):
             texteDesc = f"{details_carte['name']} ({details_carte['setCode']})"
         else:
             texteDesc = "Carte non trouvée"
-
+        # On construit un bloc contenant l'uuid qui n'apparaîtra pas (pour qu'il soit utilisé dans la recherche des détails)
+        # et le nom avec entre parenthèses le code du set de la carte qui eux seront affichés
         bloc = html.Div(
             children=[
                 texteDesc,
@@ -138,9 +142,8 @@ def afficheResultats(input, parametres_dropdown):
     return html.Div(className="row", children=blocs)
 
 # Après avoir reçu le nom et le code du set d'une carte, renvoie l'image de la carte associée
-def get_card_image(name, set_code):
-        encoded_name = quote(name)
-        url = f"https://api.scryfall.com/cards/named?exact={encoded_name}&set={set_code}"
+def get_image(name, set_code):
+        url = f"https://api.scryfall.com/cards/named?exact={name}&set={set_code}"
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
@@ -217,10 +220,12 @@ def navigationEntreEtats(input_value, dropdown_value, result_clicks, retour_clic
     # Si on a cliqué sur un des résultats
     if result_clicks and any(result_clicks):
         clicked_index = None
+
         for i, nc in enumerate(result_clicks):
             if nc:
                 clicked_index = i
                 break
+            
         if clicked_index is not None and clicked_index < len(result_texts):
             clicked_child = result_texts[clicked_index]
             uuid = None
@@ -230,7 +235,7 @@ def navigationEntreEtats(input_value, dropdown_value, result_clicks, retour_clic
                     break
 
             if not uuid:
-                raise PreventUpdate
+                raise PreventUpdate # Au cas où il y a un problème avec un des uuid
             
             details = None
             for card_id in file:
@@ -246,7 +251,7 @@ def navigationEntreEtats(input_value, dropdown_value, result_clicks, retour_clic
                 prices_textes = extraireDernierPrix(details["prices"]) if "prices" in details else ["Prix non disponible"]
 
                 # On récupère l'image associée au nom et au code du set du résultat
-                image_url = get_card_image(name, set_code)
+                image_url = get_image(name, set_code)
 
                 # On récupère le ou les graphiques associés aux prix du résultat 
                 price_graphs = []
@@ -270,6 +275,7 @@ def navigationEntreEtats(input_value, dropdown_value, result_clicks, retour_clic
                     html.Div(price_graphs)
                 ]), {'display': 'block'}
 
+    # Affichage par défaut
     return afficheResultats(input_value, dropdown_value), {'display': 'none'}
 
 if __name__ == '__main__':

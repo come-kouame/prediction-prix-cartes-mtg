@@ -11,6 +11,8 @@ Nous avons également réalisé une application web permettant de visualisé la 
 
 # Installation
 
+Il est nécessaire d'avoir Dash, mltxtend, pandas et matplotlib installés.
+
 ( Optionnel )
 Apres téléchargement vous pouvez remplacer les fichiers json dans data par les plus récents fournis par MTGJSON : https://mtgjson.com/downloads/all-files/ 
 Exécuter simplement le fichier buildMTGFiles.py, il va merge les 2 fichiers afin de créer des fichiers moins lourds que nous utiliserons pour l'application et l'algorithme apriori

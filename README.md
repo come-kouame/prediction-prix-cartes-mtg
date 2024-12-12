@@ -40,6 +40,14 @@ Contient toutes les données utiles au projet :
 | regles2.json          | Contient quelques règles Apriori.\nObtenu grâce à Apriory.py |
 
 ### dossier PricesDataSorter
-Là où se trouve les fonctions de triage des donnée ainsi que l'algorithme Apriori
+Contient tous les scripts utiles au projet.
+| Nom du fichier        |   Descrpition         |
+|:---------------------:|:---------------------:|
+| MTGFiles.py           | Permet de fusionner les données de AllPrices.json et AllPrintings.json et aussi de récupérer toutes les transactions utiles à Apriori et à la prédiction. |
+| buildLMTGFiles.py     | Appelle MTGFiles.py pour obtenir un fichier contenant uniquement les transactions utiles à Apriori. |
+| Apriory.py            | Génère les règles Apriori et les stockes dans les fichier règles.json et règles2.json.\nGénère aussi un fichier HTML pour une bonne visualisation interactives des règles calculées. |
+| Predictions.py        | Permet de faire les prédictions. |
+| ...                   | Les autres fichiers ont servi de fichier de test pendant plusieurs mois pour le tri des données |
+
 ### dossier Test_Python
 Tests réalisés sur la base que nous avons réaliser au début pour nous familiarisé avec (plusieurs ne donnerons rien car ils utilisent des fichiers json qui ne sont plus présent dans le projet)

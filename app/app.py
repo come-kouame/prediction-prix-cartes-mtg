@@ -279,4 +279,4 @@ def navigationEntreEtats(input_value, dropdown_value, result_clicks, retour_clic
     return afficheResultats(input_value, dropdown_value), {'display': 'none'}
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
